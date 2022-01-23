@@ -92,6 +92,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 	q += "Where TABLE_SCHEMA=?"
 	q += " AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME"
 	rows, err := conn.Query(q, schema.SchemaName)
+	schema.Tables = make(map[string]*model.Table)
 
 	if err != nil {
 		log.Fatal(err)
@@ -105,7 +106,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 			log.Fatal(err)
 		}
 
-		schema.Tables = append(schema.Tables, table)
+		schema.Tables[table.TableName] = table
 
 		log.Printf("Examining table %s\r\n", table.TableName)
 		readColumns(conn, schema, table.TableName, &table.Columns)
@@ -131,12 +132,10 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		column := &model.Column{
-			TableName: tableName,
-		}
+		column := &model.Column{}
 		nullable := "NO"
 		columnKey, extra := "", ""
-		err := rows.Scan(&column.ColumnName, &column.ColumnName,
+		err := rows.Scan(&column.TableName, &column.ColumnName,
 			&nullable, &column.DataType,
 			&column.CharacterMaximumLength, &column.NumericPrecision,
 			&column.NumericScale, &column.ColumnType, &columnKey, &extra)
@@ -146,7 +145,7 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 
 		log.Printf("Examining column %s\r\n", column.ColumnName)
 
-		if strings.Contains(strings.ToLower(column.ColumnType), "enum(") {
+		if column.DataType == "enum" {
 			regInBrackets := regexp.MustCompile(`\((.*?)\)`)
 			enumValues := regInBrackets.FindStringSubmatch(column.ColumnType)
 			values := strings.Split(enumValues[1], ",")

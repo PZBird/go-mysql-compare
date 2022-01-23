@@ -4,7 +4,7 @@ import "database/sql"
 
 type DatabaseSchema struct {
 	SchemaName string
-	Tables     []*Table
+	Tables     map[string]*Table
 }
 
 type Table struct {
