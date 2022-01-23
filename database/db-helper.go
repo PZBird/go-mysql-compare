@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 )
 
 // LIST OF EXCLUDED DATABASES
-var exclude_list = map[string]bool{
+var EXCLUDE_LIST = map[string]bool{
 	"information_schema": true,
 	"mysql":              true,
 	"performance_schema": true,
@@ -14,12 +14,12 @@ var exclude_list = map[string]bool{
 }
 
 func databaseInBlackList(databaseName string) bool {
-	_, exists := exclude_list[databaseName]
+	_, exists := EXCLUDE_LIST[databaseName]
 
 	return exists
 }
 
-func getDatabasesOrFail(db *sql.DB) []string {
+func GetDatabasesOrFail(db *sql.DB) []string {
 	var databaseName string
 	var databaseNames []string
 
@@ -44,7 +44,8 @@ func getDatabasesOrFail(db *sql.DB) []string {
 	return databaseNames
 }
 
-func getDatabaseTablesOrFail(db *sql.DB) map[string][]string {
+// Return a map where key is database name and value is array of table names
+func GetDatabaseTablesOrFail(db *sql.DB) map[string][]string {
 	var table string
 	var database string
 	databaseTables := make(map[string][]string)

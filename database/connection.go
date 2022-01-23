@@ -1,10 +1,11 @@
-package main
+package db
 
 import (
 	"database/sql"
 	"log"
 	"time"
 
+	"github.com/PZBird/go-mysql-compair/configuration"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -22,29 +23,22 @@ import (
 //
 // Return string example:
 // "root:password@tcp(127.0.0.1:3306)/"
-func connectionString(connectionOptions ...interface{}) string {
-	user := "root"
-	password := "password"
-	host := "127.0.0.1"
-	port := "3306"
+func ConnectionString(connectionOptions *configuration.ConfigurationElement) string {
+	connectionString := ""
+	connectionString += connectionOptions.Username
+	connectionString += ":"
+	connectionString += connectionOptions.Password
+	connectionString += "@tcp("
+	connectionString += connectionOptions.Hostname
+	connectionString += ":"
+	connectionString += connectionOptions.Port
+	connectionString += ")/information_schema?parseTime=true"
 
-	for index, val := range connectionOptions {
-		switch index {
-		case 0: // check the user parameter
-			user, _ = val.(string)
-		case 1: // check the password parameter
-			password, _ = val.(string)
-		case 2: // check the host parameter
-			host, _ = val.(string)
-		case 3: // check the port parameter
-			port, _ = val.(string)
-		}
-	}
-
-	return user + ":" + password + "@tcp(" + host + ":" + port + ")/"
+	return connectionString
 }
 
-func connect(connectionString string) *sql.DB {
+// Connect to the database using a connection string. Like: "username:password@tcp(address:port)/"
+func Connect(connectionString string) *sql.DB {
 	log.SetPrefix("connection log: ")
 	log.SetFlags(0)
 
