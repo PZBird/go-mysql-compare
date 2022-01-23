@@ -32,4 +32,5 @@ type Column struct {
 	NumericScale           sql.NullInt64
 	ColumnType             string
 	DefaultValue           string
+	EnumValues             []string
 }
