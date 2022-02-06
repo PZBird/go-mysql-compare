@@ -1,0 +1,34 @@
+version: '3.3'
+services:
+  db_stage:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - "./scripts/test_new_table_stage.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./scripts/test_new_table_2_stage.sql:/docker-entrypoint-initdb.d/2.sql"
+      - "./scripts/test_2_test_2_table_1_stage.sql:/docker-entrypoint-initdb.d/3.sql"
+      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/4.sql"
+  db_prod:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3307:3306'
+    expose:
+      - '3306'
+    volumes:
+      - "./scripts/test_new_table.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./scripts/test_new_table_2.sql:/docker-entrypoint-initdb.d/2.sql"
+      - "./scripts/test_2_test_2_table_1.sql:/docker-entrypoint-initdb.d/3.sql"
+      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/4.sql"
