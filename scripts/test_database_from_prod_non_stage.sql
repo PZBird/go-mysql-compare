@@ -19,8 +19,8 @@
 -- Table structure for table `table_from_prod_non_stage`
 --
 
-CREATE DATABASE IF NOT EXISTS test_prod;
-USE test_prod;
+CREATE DATABASE IF NOT EXISTS test_from_prod;
+USE test_from_prod;
 
 DROP TABLE IF EXISTS `table_from_prod_non_stage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
