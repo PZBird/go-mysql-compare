@@ -12,6 +12,7 @@ type ConfigurationElement struct {
 	Username         string
 	Password         string
 	ExcludedEntities []string
+	DatabasesSuffix  string
 }
 
 type Configuration struct {

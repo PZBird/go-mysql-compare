@@ -4,13 +4,15 @@
     "Port": "3306",
     "Username": "root",
     "Password": "password",
-    "ExcludedDatabases": []
+    "ExcludedDatabases": [],
+    "DatabasesSuffix": "_stage"
   },
   "db2": {
     "Hostname": "localhost",
     "Port": "3306",
     "Username": "root",
     "Password": "password",
-    "ExcludedDatabases": []
+    "ExcludedDatabases": [],
+    "DatabasesSuffix": ""
   }
 }
