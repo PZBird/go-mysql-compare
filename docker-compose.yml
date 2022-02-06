@@ -15,7 +15,9 @@ services:
       - "./scripts/test_new_table_stage.sql:/docker-entrypoint-initdb.d/1.sql"
       - "./scripts/test_new_table_2_stage.sql:/docker-entrypoint-initdb.d/2.sql"
       - "./scripts/test_2_test_2_table_1_stage.sql:/docker-entrypoint-initdb.d/3.sql"
-      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/4.sql"
+      - "./scripts/test_database_from_stage_non_prod.sql:/docker-entrypoint-initdb.d/4.sql"
+      - "./scripts/test_table_from_stage_non_prod.sql:/docker-entrypoint-initdb.d/5.sql"
+      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/6.sql"
   db_prod:
     image: mysql:5.7
     restart: always
@@ -31,4 +33,6 @@ services:
       - "./scripts/test_new_table.sql:/docker-entrypoint-initdb.d/1.sql"
       - "./scripts/test_new_table_2.sql:/docker-entrypoint-initdb.d/2.sql"
       - "./scripts/test_2_test_2_table_1.sql:/docker-entrypoint-initdb.d/3.sql"
-      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/4.sql"
+      - "./scripts/test_database_from_prod_non_stage.sql:/docker-entrypoint-initdb.d/4.sql"
+      - "./scripts/test_table_from_prod_non_stage.sql:/docker-entrypoint-initdb.d/5.sql"
+      - "./scripts/grand_access.sql:/docker-entrypoint-initdb.d/6.sql"
