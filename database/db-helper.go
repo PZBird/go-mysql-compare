@@ -50,7 +50,7 @@ func GetDatabasesOrFail(db *sql.DB) []string {
 }
 
 // Return a map where key is database name and value is array of table names
-func GetDatabaseTablesOrFail(db *sql.DB) map[string]*model.DatabaseSchema {
+func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string) map[string]*model.DatabaseSchema {
 	var tableName string
 	var databaseName string
 	databaseTables := make(map[string]*model.DatabaseSchema)
@@ -76,12 +76,14 @@ func GetDatabaseTablesOrFail(db *sql.DB) map[string]*model.DatabaseSchema {
 			log.Fatal(err)
 		}
 
+		databaseWithoutSuffix := strings.Replace(databaseName, databasesSuffix, "", 0)
+
 		schema := &model.DatabaseSchema{}
 		schema.SchemaName = databaseName
 
 		readTables(db, schema)
 
-		databaseTables[databaseName] = schema
+		databaseTables[databaseWithoutSuffix] = schema
 	}
 
 	return databaseTables
