@@ -76,7 +76,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string) map[string]*mod
 			log.Fatal(err)
 		}
 
-		databaseWithoutSuffix := strings.Replace(databaseName, databasesSuffix, "", 0)
+		databaseWithoutSuffix := strings.ReplaceAll(databaseName, databasesSuffix, "")
 
 		schema := &model.DatabaseSchema{}
 		schema.SchemaName = databaseName
@@ -110,7 +110,6 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 
 		schema.Tables[table.TableName] = table
 
-		log.Printf("Examining table %s\r\n", table.TableName)
 		readColumns(conn, schema, table.TableName, &table.Columns)
 		for _, col := range table.Columns {
 			if col.IsPrimaryKey {
@@ -144,8 +143,6 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		log.Printf("Examining column %s\r\n", column.ColumnName)
 
 		if column.DataType == "enum" {
 			regInBrackets := regexp.MustCompile(`\((.*?)\)`)
