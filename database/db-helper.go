@@ -50,7 +50,7 @@ func GetDatabasesOrFail(db *sql.DB) []string {
 }
 
 // Return a map where key is database name and value is array of table names
-func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string) map[string]*model.DatabaseSchema {
+func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string, hostname string) map[string]*model.DatabaseSchema {
 	var tableName string
 	var databaseName string
 	databaseTables := make(map[string]*model.DatabaseSchema)
@@ -80,8 +80,9 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string) map[string]*mod
 
 		schema := &model.DatabaseSchema{}
 		schema.SchemaName = databaseName
+		schema.DatabaseName = hostname
 
-		readTables(db, schema)
+		readTables(db, schema, hostname)
 
 		databaseTables[databaseWithoutSuffix] = schema
 	}
@@ -89,7 +90,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string) map[string]*mod
 	return databaseTables
 }
 
-func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
+func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 	q := "SELECT TABLE_NAME FROM information_schema.TABLES "
 	q += "Where TABLE_SCHEMA=?"
 	q += " AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME"
@@ -102,6 +103,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 
 	for rows.Next() {
 		table := &model.Table{}
+		table.DatabaseName = hostname
 		err := rows.Scan(&table.TableName)
 
 		if err != nil {
@@ -110,7 +112,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 
 		schema.Tables[table.TableName] = table
 
-		readColumns(conn, schema, table.TableName, &table.Columns)
+		readColumns(conn, schema, table.TableName, &table.Columns, hostname)
 		for _, col := range table.Columns {
 			if col.IsPrimaryKey {
 				table.PrimaryKeys = append(table.PrimaryKeys, col)
@@ -122,7 +124,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema) {
 }
 
 func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
-	tableName string, columns *[]*model.Column) {
+	tableName string, columns *[]*model.Column, hostname string) {
 	q := "SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE, DATA_TYPE, "
 	q += " CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, "
 	q += " COLUMN_TYPE, COLUMN_KEY, EXTRA"
@@ -134,6 +136,7 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 	}
 	for rows.Next() {
 		column := &model.Column{}
+		column.DatabaseName = hostname
 		nullable := "NO"
 		columnKey, extra := "", ""
 		err := rows.Scan(&column.TableName, &column.ColumnName,

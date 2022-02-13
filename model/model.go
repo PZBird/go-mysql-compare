@@ -3,11 +3,13 @@ package model
 import "database/sql"
 
 type DatabaseSchema struct {
-	SchemaName string
-	Tables     map[string]*Table
+	DatabaseName string
+	SchemaName   string
+	Tables       map[string]*Table
 }
 
 type Table struct {
+	DatabaseName string
 	TableName    string
 	Columns      []*Column
 	PrimaryKeys  []*Column
@@ -15,11 +17,13 @@ type Table struct {
 }
 
 type View struct {
-	ViewName string
-	Columns  []*Column
+	DatabaseName string
+	ViewName     string
+	Columns      []*Column
 }
 
 type Column struct {
+	DatabaseName           string
 	TableName              string
 	ColumnName             string
 	IsPrimaryKey           bool

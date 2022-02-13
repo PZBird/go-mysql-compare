@@ -28,21 +28,23 @@ func CompareSchemas(databaseTablesFromDb1 map[string]*model.DatabaseSchema, data
 			continue
 		}
 
-		for tableName, tableStruct := range schemaFromDb1.Tables {
-			tablesFromDb2 := schemaFromDb2.Tables
-
-			tableStructFromDb2, isExist := tablesFromDb2[tableName]
-
-			if !(isExist) {
-				log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStruct.TableName))
-				comparerResult.TablesToInsertDB2 = append(comparerResult.TablesToInsertDB2, tableStruct)
-
-				continue
-			}
-
-			fmt.Println(tableStructFromDb2)
-		}
+		compareTables(schemaFromDb1.Tables, schemaFromDb2.Tables, &comparerResult)
 	}
 
 	fmt.Println(comparerResult)
+}
+
+func compareTables(tables1 map[string]*model.Table, tables2 map[string]*model.Table, comparerResult *ComparerResult) {
+	for tableName, tableStruct := range tables1 {
+		tableStructFromDb2, isExist := tables2[tableName]
+
+		if !(isExist) {
+			log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStruct.TableName))
+			comparerResult.TablesToInsertDB2 = append(comparerResult.TablesToInsertDB2, tableStruct)
+
+			continue
+		}
+
+		fmt.Println(tableStructFromDb2)
+	}
 }
