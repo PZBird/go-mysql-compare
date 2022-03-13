@@ -112,7 +112,8 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 
 		schema.Tables[table.TableName] = table
 
-		readColumns(conn, schema, table.TableName, &table.Columns, hostname)
+		readColumns(conn, schema, table.TableName, table, hostname)
+
 		for _, col := range table.Columns {
 			if col.IsPrimaryKey {
 				table.PrimaryKeys = append(table.PrimaryKeys, col)
@@ -124,16 +125,19 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 }
 
 func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
-	tableName string, columns *[]*model.Column, hostname string) {
+	tableName string, table *model.Table, hostname string) {
+
 	q := "SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE, DATA_TYPE, "
 	q += " CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, "
 	q += " COLUMN_TYPE, COLUMN_KEY, EXTRA"
 	q += " FROM information_schema.COLUMNS "
 	q += "WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION"
+
 	rows, err := conn.Query(q, schema.SchemaName, tableName)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	for rows.Next() {
 		column := &model.Column{}
 		column.DatabaseName = hostname
@@ -146,6 +150,8 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		table.Columns = make(map[string]*model.Column)
 
 		if column.DataType == "enum" {
 			regInBrackets := regexp.MustCompile(`\((.*?)\)`)
@@ -173,6 +179,8 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 			column.IsAutoIncrement = true
 		}
 
-		*columns = append(*columns, column)
+		columnName := column.ColumnName
+
+		table.Columns[columnName] = column
 	}
 }

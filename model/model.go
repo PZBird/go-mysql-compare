@@ -11,7 +11,7 @@ type DatabaseSchema struct {
 type Table struct {
 	DatabaseName string
 	TableName    string
-	Columns      []*Column
+	Columns      map[string]*Column
 	PrimaryKeys  []*Column
 	OtherColumns []*Column
 }

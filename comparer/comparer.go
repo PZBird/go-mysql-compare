@@ -11,40 +11,83 @@ import (
 type ComparerResult struct {
 	LeftDatabaseExtraSchemas  []*model.DatabaseSchema
 	RightDatabaseExtraSchemas []*model.DatabaseSchema
-	TablesToInsertDB2         []*model.Table
+	TablesToInsertDBLeft      []*model.Table
+	TablesToInsertDBRight     []*model.Table
+	ColumnToInsertDBLeft      []*model.Column
+	ColumnToInsertDBRight     []*model.Column
 }
 
-func CompareSchemas(databaseTablesFromDb1 map[string]*model.DatabaseSchema, databaseTablesFromDb2 map[string]*model.DatabaseSchema, configuration configuration.Configuration) {
+func Compare(databaseTablesFromDb1 map[string]*model.DatabaseSchema, databaseTablesFromDb2 map[string]*model.DatabaseSchema, configuration configuration.Configuration) ComparerResult {
 	var comparerResult ComparerResult
 
-	for k, schemaFromDb1 := range databaseTablesFromDb1 {
-		schemaFromDb2, isExist := databaseTablesFromDb2[k]
+	compareSchemas(databaseTablesFromDb1, databaseTablesFromDb2, configuration, &comparerResult, true)
+	compareSchemas(databaseTablesFromDb2, databaseTablesFromDb1, configuration, &comparerResult, false)
+
+	return comparerResult
+}
+
+func compareSchemas(databaseTablesFromDbLeft map[string]*model.DatabaseSchema, databaseTablesFromDbRight map[string]*model.DatabaseSchema, configuration configuration.Configuration, comparerResult *ComparerResult, isSideLeft bool) {
+	for k, schemaFromDbLeft := range databaseTablesFromDbLeft {
+		schemaFromDbRight, isExist := databaseTablesFromDbRight[k]
 
 		// DB2 doesn't have table
 		if !(isExist) {
-			log.Print(fmt.Sprintf("Schema %s doesn't exist in compared db.", schemaFromDb1.SchemaName))
-			comparerResult.LeftDatabaseExtraSchemas = append(comparerResult.LeftDatabaseExtraSchemas, schemaFromDb1)
+			log.Print(fmt.Sprintf("Schema %s doesn't exist in compared db.", schemaFromDbLeft.SchemaName))
+			if isSideLeft {
+				comparerResult.LeftDatabaseExtraSchemas = append(comparerResult.LeftDatabaseExtraSchemas, schemaFromDbLeft)
+			}
+
+			if !(isSideLeft) {
+				comparerResult.RightDatabaseExtraSchemas = append(comparerResult.RightDatabaseExtraSchemas, schemaFromDbLeft)
+			}
 
 			continue
 		}
 
-		compareTables(schemaFromDb1.Tables, schemaFromDb2.Tables, &comparerResult)
+		compareTables(schemaFromDbLeft.Tables, schemaFromDbRight.Tables, comparerResult, isSideLeft)
 	}
-
-	fmt.Println(comparerResult)
 }
 
-func compareTables(tables1 map[string]*model.Table, tables2 map[string]*model.Table, comparerResult *ComparerResult) {
-	for tableName, tableStruct := range tables1 {
-		tableStructFromDb2, isExist := tables2[tableName]
+func compareTables(tablesLeft map[string]*model.Table, tablesRight map[string]*model.Table, comparerResult *ComparerResult, isSideLeft bool) {
+	for tableName, tableStructFromLeft := range tablesLeft {
+		tableStructFromDbRight, isExist := tablesRight[tableName]
 
 		if !(isExist) {
-			log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStruct.TableName))
-			comparerResult.TablesToInsertDB2 = append(comparerResult.TablesToInsertDB2, tableStruct)
+			log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStructFromLeft.TableName))
+
+			if isSideLeft {
+				comparerResult.TablesToInsertDBRight = append(comparerResult.TablesToInsertDBRight, tableStructFromLeft)
+			}
+
+			if !(isSideLeft) {
+				comparerResult.TablesToInsertDBLeft = append(comparerResult.TablesToInsertDBLeft, tableStructFromLeft)
+			}
 
 			continue
 		}
 
-		fmt.Println(tableStructFromDb2)
+		compareColumns(tableStructFromLeft, tableStructFromDbRight, comparerResult, isSideLeft)
+	}
+}
+
+func compareColumns(tableStructFromLeft *model.Table, tableStructFromDbRight *model.Table, comparerResult *ComparerResult, isSideLeft bool) {
+	for columnName, columnFromLeft := range tableStructFromLeft.Columns {
+		columnFromRight, isExist := tableStructFromDbRight.Columns[columnName]
+
+		if !(isExist) {
+			log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStructFromLeft.TableName))
+
+			if isSideLeft {
+				comparerResult.ColumnToInsertDBLeft = append(comparerResult.ColumnToInsertDBLeft, columnFromLeft)
+			}
+
+			if !(isSideLeft) {
+				comparerResult.ColumnToInsertDBRight = append(comparerResult.ColumnToInsertDBRight, columnFromLeft)
+			}
+
+			continue
+		}
+
+		fmt.Println(columnFromRight)
 	}
 }

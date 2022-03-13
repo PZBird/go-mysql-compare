@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	comparer "github.com/PZBird/go-mysql-compair/comparer"
 	"github.com/PZBird/go-mysql-compair/configuration"
 	db "github.com/PZBird/go-mysql-compair/database"
@@ -18,5 +20,7 @@ func main() {
 	databaseTablesFromDb1 := db.GetDatabaseTablesOrFail(db1, config.Db1.DatabasesSuffix, hostname1)
 	databaseTablesFromDb2 := db.GetDatabaseTablesOrFail(db2, config.Db2.DatabasesSuffix, hostname2)
 
-	comparer.CompareSchemas(databaseTablesFromDb1, databaseTablesFromDb2, config)
+	compareResult := comparer.Compare(databaseTablesFromDb1, databaseTablesFromDb2, config)
+
+	fmt.Println(compareResult)
 }
