@@ -92,7 +92,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string, hostname string
 
 func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 	q := "SELECT TABLE_NAME FROM information_schema.TABLES "
-	q += "Where TABLE_SCHEMA=?"
+	q += "WHERE TABLE_SCHEMA=?"
 	q += " AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME"
 	rows, err := conn.Query(q, schema.SchemaName)
 	schema.Tables = make(map[string]*model.Table)
@@ -113,6 +113,7 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 		schema.Tables[table.TableName] = table
 
 		readColumns(conn, schema, table.TableName, table, hostname)
+		readIndexes(conn, schema, table.TableName, table, hostname)
 
 		for _, col := range table.Columns {
 			if col.IsPrimaryKey {
@@ -124,6 +125,56 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 	}
 }
 
+type indexResponse struct {
+	IndexName  string
+	SeqInIndex int8
+	ColumnName string
+	NonUnique  bool
+	IndexType  string
+	Comment    string
+}
+
+func readIndexes(conn *sql.DB, schema *model.DatabaseSchema,
+	tableName string, table *model.Table, hostname string) {
+	q := "SELECT"
+	q += "	index_name,"
+	q += "	seq_in_index,"
+	q += "	column_name,"
+	q += "	non_unique,"
+	q += "	index_type,"
+	q += "	comment"
+	q += " FROM"
+	q += "		INFORMATION_SCHEMA.STATISTICS"
+	q += " WHERE 1=1"
+	q += "		AND table_schema = ?"
+	q += "		AND table_name = ?"
+	q += " ORDER BY seq_in_index;"
+
+	rows, err := conn.Query(q, schema.SchemaName, tableName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for rows.Next() {
+		index := &model.Index{}
+		index.TableName = tableName
+		var response indexResponse
+
+		err := rows.Scan(
+			&response.IndexName,
+			&response.SeqInIndex,
+			&response.ColumnName,
+			&response.NonUnique,
+			&response.IndexType,
+			&response.Comment,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 	tableName string, table *model.Table, hostname string) {
 
@@ -131,7 +182,7 @@ func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
 	q += " CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, "
 	q += " COLUMN_TYPE, COLUMN_KEY, EXTRA"
 	q += " FROM information_schema.COLUMNS "
-	q += "WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION"
+	q += "WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION;"
 
 	rows, err := conn.Query(q, schema.SchemaName, tableName)
 	if err != nil {
