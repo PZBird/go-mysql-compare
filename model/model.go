@@ -14,6 +14,7 @@ type Table struct {
 	Columns      map[string]*Column
 	PrimaryKeys  []*Column
 	OtherColumns []*Column
+	Indexes      []*Index
 }
 
 type View struct {
@@ -37,4 +38,18 @@ type Column struct {
 	ColumnType             string
 	DefaultValue           string
 	EnumValues             []string
+}
+
+type Index struct {
+	DatabaseName string
+	TableName    string
+	IndexName    string
+	NonUnique    bool
+	Comment      string
+	Columns      []*IndexColumn
+}
+
+type IndexColumn struct {
+	SeqInIndex int8
+	ColumnName string
 }
