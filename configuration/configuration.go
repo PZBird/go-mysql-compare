@@ -27,11 +27,11 @@ func LoadConfiguration(path string) Configuration {
 		log.Fatalf("Configuration file not found at path %s", path)
 	}
 
-	var jsontype Configuration
+	var config Configuration
 
-	if e = json.Unmarshal(file, &jsontype); e != nil {
+	if e = json.Unmarshal(file, &config); e != nil {
 		log.Fatalf("Invalid configuration file due to %s", e.Error())
 	}
 
-	return jsontype
+	return config
 }
