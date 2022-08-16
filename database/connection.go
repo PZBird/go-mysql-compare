@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/PZBird/go-mysql-compair/configuration"
+	"github.com/PZBird/go-mysql-compare/configuration"
 	_ "github.com/go-sql-driver/mysql"
 )
 

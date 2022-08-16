@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	comparer "github.com/PZBird/go-mysql-compair/comparer"
-	"github.com/PZBird/go-mysql-compair/configuration"
-	db "github.com/PZBird/go-mysql-compair/database"
+	comparer "github.com/PZBird/go-mysql-compare/comparer"
+	"github.com/PZBird/go-mysql-compare/configuration"
+	db "github.com/PZBird/go-mysql-compare/database"
 )
 
 func main() {

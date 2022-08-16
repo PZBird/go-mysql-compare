@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/PZBird/go-mysql-compair/model"
+	"github.com/PZBird/go-mysql-compare/model"
 )
 
 // LIST OF EXCLUDED DATABASES

@@ -1,4 +1,4 @@
-module github.com/PZBird/go-mysql-compair
+module github.com/PZBird/go-mysql-compare
 
 go 1.17
 

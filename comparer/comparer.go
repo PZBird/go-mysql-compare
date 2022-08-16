@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PZBird/go-mysql-compair/configuration"
-	"github.com/PZBird/go-mysql-compair/model"
+	"github.com/PZBird/go-mysql-compare/configuration"
+	"github.com/PZBird/go-mysql-compare/model"
 )
 
 type ComparerResult struct {
