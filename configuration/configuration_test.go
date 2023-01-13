@@ -27,7 +27,7 @@ func TestLoadConfiguration(t *testing.T) {
 		Db2,
 	}
 
-	config := LoadConfiguration("../config.example.json")
+	config := LoadConfiguration("./config.mock.json")
 
 	equal := reflect.DeepEqual(mock, config)
 

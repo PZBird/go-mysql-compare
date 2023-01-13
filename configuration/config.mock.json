@@ -1,0 +1,18 @@
+{
+  "db1": {
+    "Hostname": "localhost",
+    "Port": "3306",
+    "Username": "user",
+    "Password": "password",
+    "ExcludedEntities": [],
+    "DatabasesSuffix": "_stage"
+  },
+  "db2": {
+    "Hostname": "localhost",
+    "Port": "3307",
+    "Username": "user",
+    "Password": "password",
+    "ExcludedEntities": [],
+    "DatabasesSuffix": ""
+  }
+}
