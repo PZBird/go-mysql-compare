@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           go install
-          go get -d golang.org/x/lint/golint
+          go get -u -d golang.org/x/lint/golint
 
       - name: Build
         run: go build -v ./...
