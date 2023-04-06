@@ -6,6 +6,7 @@ import (
 	comparer "github.com/PZBird/go-mysql-compare/comparer"
 	"github.com/PZBird/go-mysql-compare/configuration"
 	db "github.com/PZBird/go-mysql-compare/database"
+	"github.com/PZBird/go-mysql-compare/model"
 )
 
 func main() {
@@ -22,23 +23,19 @@ func main() {
 
 	compareResult := comparer.Compare(databaseLeft, databaseRight, config)
 
-	if len(compareResult.LeftDatabaseExtraSchemas) > 0 {
-		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameLeft))
-
-		for _, schema := range compareResult.LeftDatabaseExtraSchemas {
-			query := db.CreateDatabase(schema)
-			fmt.Println(query)
-		}
-	}
-
-	if len(compareResult.RightDatabaseExtraSchemas) > 0 {
-		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameRight))
-
-		for _, schema := range compareResult.RightDatabaseExtraSchemas {
-			query := db.CreateDatabase(schema)
-			fmt.Println(query)
-		}
-	}
+	genCteateDatabaseScripts(compareResult.LeftDatabaseExtraSchemas, hostnameLeft)
+	genCteateDatabaseScripts(compareResult.RightDatabaseExtraSchemas, hostnameRight)
 
 	fmt.Println(compareResult)
+}
+
+func genCteateDatabaseScripts(databaseExtraSchemas []*model.DatabaseSchema, hostnameLeft string) {
+	if len(databaseExtraSchemas) > 0 {
+		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameLeft))
+
+		for _, schema := range databaseExtraSchemas {
+			query := db.CreateDatabase(schema)
+			fmt.Println(query)
+		}
+	}
 }
