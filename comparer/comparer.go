@@ -15,6 +15,8 @@ type ComparerResult struct {
 	TablesToInsertDBRight     []*model.Table
 	ColumnToInsertDBLeft      []*model.Column
 	ColumnToInsertDBRight     []*model.Column
+	ColumnToModifyDBLeft      []*model.Column
+	ColumnToModifyDBRight     []*model.Column
 	EnumToModifyDBLeft        []*model.Column
 	EnumToModifyDBRight       []*model.Column
 	IndexToInsertDBLeft       []*model.Index
