@@ -74,8 +74,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string, hostname string
 			log.Fatal(err)
 		}
 
-		// TODO: Need to replace only end of
-		databaseWithoutSuffix := strings.ReplaceAll(databaseName, databasesSuffix, "")
+		databaseWithoutSuffix := strings.TrimRight(databaseName, databasesSuffix)
 
 		schema := &model.DatabaseSchema{}
 		schema.SchemaName = databaseName
