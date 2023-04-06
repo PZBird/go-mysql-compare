@@ -3,8 +3,6 @@ package db
 import (
 	"database/sql"
 	"log"
-	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/PZBird/go-mysql-compare/model"
@@ -76,6 +74,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string, hostname string
 			log.Fatal(err)
 		}
 
+		// TODO: Need to replace only end of
 		databaseWithoutSuffix := strings.ReplaceAll(databaseName, databasesSuffix, "")
 
 		schema := &model.DatabaseSchema{}
@@ -122,116 +121,5 @@ func readTables(conn *sql.DB, schema *model.DatabaseSchema, hostname string) {
 				table.OtherColumns = append(table.OtherColumns, col)
 			}
 		}
-	}
-}
-
-type indexResponse struct {
-	IndexName  string
-	SeqInIndex int8
-	ColumnName string
-	NonUnique  bool
-	IndexType  string
-	Comment    string
-}
-
-func readIndexes(conn *sql.DB, schema *model.DatabaseSchema,
-	tableName string, table *model.Table, hostname string) {
-	q := "SELECT"
-	q += "	index_name,"
-	q += "	seq_in_index,"
-	q += "	column_name,"
-	q += "	non_unique,"
-	q += "	index_type,"
-	q += "	comment"
-	q += " FROM"
-	q += "		INFORMATION_SCHEMA.STATISTICS"
-	q += " WHERE 1=1"
-	q += "		AND table_schema = ?"
-	q += "		AND table_name = ?"
-	q += " ORDER BY seq_in_index;"
-
-	rows, err := conn.Query(q, schema.SchemaName, tableName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for rows.Next() {
-		index := &model.Index{}
-		index.TableName = tableName
-		var response indexResponse
-
-		err := rows.Scan(
-			&response.IndexName,
-			&response.SeqInIndex,
-			&response.ColumnName,
-			&response.NonUnique,
-			&response.IndexType,
-			&response.Comment,
-		)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
-func readColumns(conn *sql.DB, schema *model.DatabaseSchema,
-	tableName string, table *model.Table, hostname string) {
-
-	q := "SELECT TABLE_NAME, COLUMN_NAME, IS_NULLABLE, DATA_TYPE, "
-	q += " CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, "
-	q += " COLUMN_TYPE, COLUMN_KEY, EXTRA"
-	q += " FROM information_schema.COLUMNS "
-	q += "WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION;"
-
-	rows, err := conn.Query(q, schema.SchemaName, tableName)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for rows.Next() {
-		column := &model.Column{}
-		column.DatabaseName = hostname
-		nullable := "NO"
-		columnKey, extra := "", ""
-		err := rows.Scan(&column.TableName, &column.ColumnName,
-			&nullable, &column.DataType,
-			&column.CharacterMaximumLength, &column.NumericPrecision,
-			&column.NumericScale, &column.ColumnType, &columnKey, &extra)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		table.Columns = make(map[string]*model.Column)
-
-		if column.DataType == "enum" {
-			regInBrackets := regexp.MustCompile(`\((.*?)\)`)
-			enumValues := regInBrackets.FindStringSubmatch(column.ColumnType)
-			values := strings.Split(enumValues[1], ",")
-			sort.Strings(values)
-			column.EnumValues = values
-		}
-
-		if nullable == "NO" {
-			column.IsNullable = false
-		} else {
-			column.IsNullable = true
-		}
-
-		if columnKey == "PRI" {
-			column.IsPrimaryKey = true
-		}
-
-		if columnKey == "UNI" {
-			column.IsUnique = true
-		}
-
-		if extra == "auto_increment" {
-			column.IsAutoIncrement = true
-		}
-
-		columnName := column.ColumnName
-
-		table.Columns[columnName] = column
 	}
 }

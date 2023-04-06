@@ -14,7 +14,7 @@ type Table struct {
 	Columns      map[string]*Column
 	PrimaryKeys  []*Column
 	OtherColumns []*Column
-	Indexes      []*Index
+	Indexes      map[string]*Index
 }
 
 type View struct {
