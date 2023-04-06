@@ -74,7 +74,7 @@ func GetDatabaseTablesOrFail(db *sql.DB, databasesSuffix string, hostname string
 			log.Fatal(err)
 		}
 
-		databaseWithoutSuffix := strings.TrimRight(databaseName, databasesSuffix)
+		databaseWithoutSuffix := strings.TrimSuffix(databaseName, databasesSuffix)
 
 		schema := &model.DatabaseSchema{}
 		schema.SchemaName = databaseName

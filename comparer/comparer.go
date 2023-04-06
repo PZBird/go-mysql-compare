@@ -15,6 +15,8 @@ type ComparerResult struct {
 	TablesToInsertDBRight     []*model.Table
 	ColumnToInsertDBLeft      []*model.Column
 	ColumnToInsertDBRight     []*model.Column
+	EnumToModifyDBLeft        []*model.Column
+	EnumToModifyDBRight       []*model.Column
 	IndexToInsertDBLeft       []*model.Index
 	IndexToInsertDBRight      []*model.Index
 }
@@ -115,7 +117,20 @@ func compareColumns(tableStruct *model.Table, tableStructForCompare *model.Table
 			continue
 		}
 
+		if len(columnFromLeft.EnumValues) > 0 {
+			compareEnums(columnFromLeft, columnFromRight, isSideLeft, comparerResult)
+		}
+
 		fmt.Println(columnFromRight)
+	}
+}
+
+func compareEnums(columnFromLeft, columnFromRight *model.Column, isSideLeft bool, comparerResult *ComparerResult) {
+	if len(columnFromLeft.EnumValues) != len(columnFromRight.EnumValues) {
+		comparerResult.EnumToModifyDBLeft = append(comparerResult.EnumToModifyDBLeft, columnFromRight)
+		comparerResult.EnumToModifyDBRight = append(comparerResult.EnumToModifyDBRight, columnFromLeft)
+
+		return
 	}
 }
 
