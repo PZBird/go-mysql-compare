@@ -14,13 +14,31 @@ func main() {
 	db1 := db.Connect(db.ConnectionString(&config.Db1))
 	db2 := db.Connect(db.ConnectionString(&config.Db2))
 
-	hostname1 := config.Db1.Hostname + ":" + config.Db1.Port
-	hostname2 := config.Db2.Hostname + ":" + config.Db2.Port
+	hostnameLeft := config.Db1.Hostname + ":" + config.Db1.Port
+	hostnameRight := config.Db2.Hostname + ":" + config.Db2.Port
 
-	databaseTablesFromDb1 := db.GetDatabaseTablesOrFail(db1, config.Db1.DatabasesSuffix, hostname1)
-	databaseTablesFromDb2 := db.GetDatabaseTablesOrFail(db2, config.Db2.DatabasesSuffix, hostname2)
+	databaseLeft := db.GetDatabaseTablesOrFail(db1, config.Db1.DatabasesSuffix, hostnameLeft)
+	databaseRight := db.GetDatabaseTablesOrFail(db2, config.Db2.DatabasesSuffix, hostnameRight)
 
-	compareResult := comparer.Compare(databaseTablesFromDb1, databaseTablesFromDb2, config)
+	compareResult := comparer.Compare(databaseLeft, databaseRight, config)
+
+	if len(compareResult.LeftDatabaseExtraSchemas) > 0 {
+		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameLeft))
+
+		for _, schema := range compareResult.LeftDatabaseExtraSchemas {
+			query := db.CreateDatabase(schema)
+			fmt.Println(query)
+		}
+	}
+
+	if len(compareResult.RightDatabaseExtraSchemas) > 0 {
+		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameRight))
+
+		for _, schema := range compareResult.RightDatabaseExtraSchemas {
+			query := db.CreateDatabase(schema)
+			fmt.Println(query)
+		}
+	}
 
 	fmt.Println(compareResult)
 }

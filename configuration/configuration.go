@@ -13,6 +13,7 @@ type ConfigurationElement struct {
 	Password         string
 	ExcludedEntities []string
 	DatabasesSuffix  string
+	IgnoreNewSchemas bool
 }
 
 type Configuration struct {
