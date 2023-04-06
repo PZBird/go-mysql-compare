@@ -126,12 +126,35 @@ func compareColumns(tableStruct *model.Table, tableStructForCompare *model.Table
 }
 
 func compareEnums(columnFromLeft, columnFromRight *model.Column, isSideLeft bool, comparerResult *ComparerResult) {
+	if isSideLeft {
+		return
+	}
+
 	if len(columnFromLeft.EnumValues) != len(columnFromRight.EnumValues) {
 		comparerResult.EnumToModifyDBLeft = append(comparerResult.EnumToModifyDBLeft, columnFromRight)
 		comparerResult.EnumToModifyDBRight = append(comparerResult.EnumToModifyDBRight, columnFromLeft)
 
 		return
 	}
+
+	for _, value := range columnFromLeft.EnumValues {
+		if !contains(columnFromRight.EnumValues, value) {
+			comparerResult.EnumToModifyDBLeft = append(comparerResult.EnumToModifyDBLeft, columnFromRight)
+			comparerResult.EnumToModifyDBRight = append(comparerResult.EnumToModifyDBRight, columnFromLeft)
+
+			return
+		}
+	}
+}
+
+func contains(elems []string, v string) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
 }
 
 func appendColumnsForDb(tableStruct *model.Table, isSideLeft bool, comparerResult *ComparerResult, column *model.Column) {
