@@ -31,7 +31,7 @@ func main() {
 
 func genCteateDatabaseScripts(databaseExtraSchemas []*model.DatabaseSchema, hostnameLeft string) {
 	if len(databaseExtraSchemas) > 0 {
-		fmt.Println(fmt.Sprintf("New schemas for the %s:", hostnameLeft))
+		fmt.Printf("New schemas for the %s:\n", hostnameLeft)
 
 		for _, schema := range databaseExtraSchemas {
 			query := db.CreateDatabase(schema)
