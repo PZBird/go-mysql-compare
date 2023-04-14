@@ -39,7 +39,7 @@ func createTables(schema *model.DatabaseSchema) string {
 }
 
 func addPrimaryColumn(table *model.Table) string {
-	query := fmt.Sprintf("PRIMARY KEY (")
+	query := "PRIMARY KEY ("
 
 	needComma := false
 	for _, column := range table.PrimaryKeys {
