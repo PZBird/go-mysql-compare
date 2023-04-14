@@ -3,6 +3,7 @@ package comparer
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/PZBird/go-mysql-compare/configuration"
 	"github.com/PZBird/go-mysql-compare/model"
@@ -15,6 +16,8 @@ type ComparerResult struct {
 	TablesToInsertDBRight     []*model.Table
 	ColumnToInsertDBLeft      []*model.Column
 	ColumnToInsertDBRight     []*model.Column
+	ColumnToRemoveDBLeft      []*model.Column
+	ColumnToRemoveDBRight     []*model.Column
 	ColumnToModifyDBLeft      []*model.Column
 	ColumnToModifyDBRight     []*model.Column
 	EnumToModifyDBLeft        []*model.Column
@@ -48,7 +51,7 @@ func compareSchemas(databaseTablesFromDbLeft map[string]*model.DatabaseSchema, d
 }
 
 func appendExtraSchema(isSideLeft bool, comparerResult *ComparerResult, schema *model.DatabaseSchema) {
-	log.Print(fmt.Sprintf("Schema %s doesn't exist in compared db.", schema.SchemaName))
+	log.Printf("Schema %s doesn't exist in compared db.", schema.SchemaName)
 
 	if isSideLeft {
 		comparerResult.LeftDatabaseExtraSchemas = append(comparerResult.LeftDatabaseExtraSchemas, schema)
@@ -88,7 +91,7 @@ func compareIndexes(tableStruct *model.Table, tableStructForCompare *model.Table
 }
 
 func appendIndexForTable(tableStruct *model.Table, isSideLeft bool, comparerResult *ComparerResult, index *model.Index) {
-	log.Print(fmt.Sprintf("Index %s doesn't exist in compared %s.", index.IndexName, tableStruct.TableName))
+	log.Printf("Index %s doesn't exist in compared %s.", index.IndexName, tableStruct.TableName)
 
 	if isSideLeft {
 		comparerResult.IndexToInsertDBLeft = append(comparerResult.IndexToInsertDBLeft, index)
@@ -99,7 +102,7 @@ func appendIndexForTable(tableStruct *model.Table, isSideLeft bool, comparerResu
 }
 
 func appendTableForInsert(tableStruct *model.Table, isSideLeft bool, comparerResult *ComparerResult) {
-	log.Print(fmt.Sprintf("Table %s doesn't exist in compared db.", tableStruct.TableName))
+	log.Printf("Table %s doesn't exist in compared db.", tableStruct.TableName)
 
 	if isSideLeft {
 		comparerResult.TablesToInsertDBRight = append(comparerResult.TablesToInsertDBRight, tableStruct)
@@ -119,12 +122,26 @@ func compareColumns(tableStruct *model.Table, tableStructForCompare *model.Table
 			continue
 		}
 
-		if len(columnFromLeft.EnumValues) > 0 {
-			compareEnums(columnFromLeft, columnFromRight, isSideLeft, comparerResult)
-		}
+		deepColumnCompare(columnFromLeft, columnFromRight, isSideLeft, comparerResult)
 
 		fmt.Println(columnFromRight)
 	}
+}
+
+func deepColumnCompare(columnFromLeft *model.Column, columnFromRight *model.Column, isSideLeft bool, comparerResult *ComparerResult) {
+	if len(columnFromLeft.EnumValues) > 0 {
+		compareEnums(columnFromLeft, columnFromRight, isSideLeft, comparerResult)
+	}
+
+	back := columnFromLeft.DatabaseName
+	columnFromLeft.DatabaseName = columnFromRight.DatabaseName
+
+	if !reflect.DeepEqual(columnFromLeft, columnFromRight) {
+		comparerResult.ColumnToModifyDBLeft = append(comparerResult.ColumnToModifyDBLeft, columnFromRight)
+		comparerResult.ColumnToModifyDBRight = append(comparerResult.ColumnToModifyDBRight, columnFromLeft)
+	}
+
+	columnFromLeft.DatabaseName = back
 }
 
 func compareEnums(columnFromLeft, columnFromRight *model.Column, isSideLeft bool, comparerResult *ComparerResult) {
@@ -160,12 +177,14 @@ func contains(elems []string, v string) bool {
 }
 
 func appendColumnsForDb(tableStruct *model.Table, isSideLeft bool, comparerResult *ComparerResult, column *model.Column) {
-	log.Print(fmt.Sprintf("Column %s doesn't exist in compared %s.", column.ColumnName, tableStruct.TableName))
+	log.Printf("Column %s doesn't exist in compared %s.", column.ColumnName, tableStruct.TableName)
 
 	if isSideLeft {
 		comparerResult.ColumnToInsertDBLeft = append(comparerResult.ColumnToInsertDBLeft, column)
+		comparerResult.ColumnToRemoveDBRight = append(comparerResult.ColumnToRemoveDBRight, column)
 		return
 	}
 
 	comparerResult.ColumnToInsertDBRight = append(comparerResult.ColumnToInsertDBRight, column)
+	comparerResult.ColumnToRemoveDBLeft = append(comparerResult.ColumnToRemoveDBLeft, column)
 }
