@@ -7,6 +7,7 @@ import (
 )
 
 func CreateDatabase(schema *model.DatabaseSchema) string {
+	// CREATE SCHEMA `example`;
 	query := fmt.Sprintf("CREATE SCHEMA `%s`;\n", schema.SchemaName)
 
 	query += createTables(schema)
@@ -14,6 +15,13 @@ func CreateDatabase(schema *model.DatabaseSchema) string {
 	return query
 }
 
+// CREATE TABLE `example`.`test` (
+//
+//	`id` int(10) unsigned NOT NULL AUTO_INCREMENT ,
+//	`field1` varchar(45) NULL ,
+//	`field2` tinyint(4) NULL ,
+//	PRIMARY KEY (`id`)
+//	);
 func createTables(schema *model.DatabaseSchema) string {
 	query := ""
 	for _, table := range schema.Tables {
@@ -47,23 +55,21 @@ func addPrimaryColumn(table *model.Table) string {
 	return query
 }
 
-// `col2` VARCHAR(45) NULL,
-// );"
 func addColumnForCreateTable(column *model.Column) string {
 	query := fmt.Sprintf("`%s` %s", column.ColumnName, column.ColumnType)
 
 	if !column.IsNullable {
-		query += " NOT NULL "
+		query += " NOT NULL"
 	} else {
-		query += " NULL "
+		query += " NULL"
 	}
 
 	if column.IsAutoIncrement {
-		query += " AUTO_INCREMENT "
+		query += " AUTO_INCREMENT"
 	}
 
 	if column.DefaultValue != "" {
-		query += fmt.Sprintf(" DEFAULT '%s' ", column.DefaultValue)
+		query += fmt.Sprintf(" DEFAULT '%s'", column.DefaultValue)
 	}
 
 	query += ",\n"
