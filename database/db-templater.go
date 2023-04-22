@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/PZBird/go-mysql-compare/model"
 )
@@ -74,4 +75,40 @@ func addColumnForCreateTable(column *model.Column) string {
 
 	query += ",\n"
 	return query
+}
+
+func GenNewColumnsScripts(b *strings.Builder, cols []*model.Column) {
+	for _, col := range cols {
+		fmt.Fprintf(b, "ALTER TABLE `%s` ADD COLUMN `%s` %s", col.TableName, col.ColumnName, col.ColumnType)
+		if !col.IsNullable {
+			fmt.Fprint(b, " NOT NULL")
+		}
+
+		if col.DefaultValue != "" {
+			fmt.Fprintf(b, " DEFAULT '%s'", col.DefaultValue)
+		}
+
+		fmt.Fprintln(b, ";")
+	}
+}
+
+func GenRemovedColumnsScripts(b *strings.Builder, cols []*model.Column) {
+	for _, col := range cols {
+		fmt.Fprintf(b, "ALTER TABLE `%s` DROP COLUMN `%s`;\n", col.TableName, col.ColumnName)
+	}
+}
+
+func GenModifiedColumnsScripts(b *strings.Builder, cols []*model.Column) {
+	for _, col := range cols {
+		fmt.Fprintf(b, "ALTER TABLE `%s` MODIFY COLUMN `%s` %s", col.TableName, col.ColumnName, col.ColumnType)
+		if !col.IsNullable {
+			fmt.Fprint(b, " NOT NULL")
+		}
+
+		if col.DefaultValue != "" {
+			fmt.Fprintf(b, " DEFAULT '%s'", col.DefaultValue)
+		}
+
+		fmt.Fprintln(b, ";")
+	}
 }

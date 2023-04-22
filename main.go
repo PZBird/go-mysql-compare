@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	comparer "github.com/PZBird/go-mysql-compare/comparer"
 	"github.com/PZBird/go-mysql-compare/configuration"
@@ -26,6 +27,11 @@ func main() {
 	genCteateDatabaseScripts(compareResult.LeftDatabaseExtraSchemas, hostnameLeft)
 	genCteateDatabaseScripts(compareResult.RightDatabaseExtraSchemas, hostnameRight)
 
+	leftColumnsSql, rightColumsSql := genColumnDiffScripts(&compareResult)
+
+	fmt.Println(leftColumnsSql)
+	fmt.Println(rightColumsSql)
+
 	fmt.Println(compareResult)
 }
 
@@ -38,4 +44,20 @@ func genCteateDatabaseScripts(databaseExtraSchemas []*model.DatabaseSchema, host
 			fmt.Println(query)
 		}
 	}
+}
+
+func genColumnDiffScripts(result *comparer.ComparerResult) (leftColumSql, reightColumnSql string) {
+	var leftColumnSqlBuilder strings.Builder
+	var rightColumnSqlBuilder strings.Builder
+
+	db.GenNewColumnsScripts(&leftColumnSqlBuilder, result.ColumnToInsertDBLeft)
+	db.GenNewColumnsScripts(&rightColumnSqlBuilder, result.ColumnToInsertDBRight)
+
+	db.GenRemovedColumnsScripts(&leftColumnSqlBuilder, result.ColumnToRemoveDBLeft)
+	db.GenRemovedColumnsScripts(&rightColumnSqlBuilder, result.ColumnToRemoveDBRight)
+
+	db.GenModifiedColumnsScripts(&leftColumnSqlBuilder, result.ColumnToModifyDBLeft)
+	db.GenModifiedColumnsScripts(&rightColumnSqlBuilder, result.ColumnToModifyDBRight)
+
+	return leftColumnSqlBuilder.String(), rightColumnSqlBuilder.String()
 }
